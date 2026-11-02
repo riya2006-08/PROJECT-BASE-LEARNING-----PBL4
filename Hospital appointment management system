@@ -1,0 +1,201 @@
+"""
+Hospital Appointment Management System
+Architecture: Modular Programming (Functional modules with clear data flows)
+Data Store: Memory-backed local dictionaries (easily extensible to CSV/SQL)
+"""
+
+# =====================================================================
+# MODULE 1: GLOBAL DATA STORE (Simulating the Database Layer)
+# =====================================================================
+patients = {}      # Format: {patient_id: {"name": str, "age": int, "gender": str}}
+doctors = {
+    101: {"name": "Dr. Smith", "specialization": "Cardiology", "timing": "09:00 AM - 01:00 PM"},
+    102: {"name": "Dr. Adams", "specialization": "Pediatrics", "timing": "02:00 PM - 06:00 PM"},
+    103: {"name": "Dr. Baker", "specialization": "Neurology", "timing": "10:00 AM - 04:00 PM"}
+}
+appointments = {}  # Format: {appointment_id: {"patient_id": int, "doctor_id": int, "date": str}}
+next_patient_id = 1
+next_appointment_id = 5001
+
+
+# =====================================================================
+# MODULE 2: PATIENT MANAGEMENT MODULE
+# =====================================================================
+def register_patient(name, age, gender):
+    """Registers a new patient and returns the assigned Patient ID."""
+    global next_patient_id
+    patient_id = next_patient_id
+    patients[patient_id] = {
+        "name": name,
+        "age": age,
+        "gender": gender
+    }
+    next_patient_id += 1
+    return patient_id
+
+def view_patients():
+    """Returns a list of all registered patients."""
+    return patients
+
+def get_patient(patient_id):
+    """Fetches details of a single patient or returns None."""
+    return patients.get(patient_id)
+
+
+# =====================================================================
+# MODULE 3: DOCTOR MANAGEMENT MODULE
+# =====================================================================
+def view_doctors():
+    """Returns the pre-populated catalog of operational doctors."""
+    return doctors
+
+def get_doctor(doctor_id):
+    """Fetches details of a single doctor or returns None."""
+    return doctors.get(doctor_id)
+
+
+# =====================================================================
+# MODULE 4: APPOINTMENT SCHEDULING MODULE
+# =====================================================================
+def book_appointment(patient_id, doctor_id, date):
+    """Books an appointment if both patient and doctor entities exist."""
+    global next_appointment_id
+    
+    # Validation boundary check
+    if not get_patient(patient_id):
+        return {"status": False, "message": f"Error: Patient ID {patient_id} not found."}
+    if not get_doctor(doctor_id):
+        return {"status": False, "message": f"Error: Doctor ID {doctor_id} not found."}
+        
+    appointment_id = next_appointment_id
+    appointments[appointment_id] = {
+        "patient_id": patient_id,
+        "doctor_id": doctor_id,
+        "date": date
+    }
+    next_appointment_id += 1
+    return {"status": True, "appointment_id": appointment_id}
+
+def cancel_appointment(appointment_id):
+    """Removes an appointment record if it exists."""
+    if appointment_id in appointments:
+        del appointments[appointment_id]
+        return True
+    return False
+
+def get_all_appointments():
+    """Returns all active scheduled appointments."""
+    return appointments
+
+
+# =====================================================================
+# MODULE 5: USER INTERFACE & UTILITY LAYER (Presentation Module)
+# =====================================================================
+def print_header(title):
+    print(f"\n{'='*10} {title} {'='*10}")
+
+def handle_patient_registration():
+    print_header("Patient Registration")
+    name = input("Enter Patient Name: ").strip()
+    try:
+        age = int(input("Enter Patient Age: "))
+        gender = input("Enter Gender (Male/Female/Other): ").strip()
+        
+        if not name or not gender:
+            print(" Validation Error: Fields cannot be empty.")
+            return
+
+        p_id = register_patient(name, age, gender)
+        print(f" Success: Patient registered successfully! Assigned ID: {p_id}")
+    except ValueError:
+        print(" Validation Error: Age must be a valid integer.")
+
+def handle_doctor_lookup():
+    print_header("Available Doctors & Slots")
+    all_docs = view_doctors()
+    print(f"{'ID':<6}{'Doctor Name':<20}{'Specialization':<20}{'Available Timings'}")
+    print("-" * 65)
+    for doc_id, info in all_docs.items():
+        print(f"{doc_id:<6}{info['name']:<20}{info['specialization']:<20}{info['timing']}")
+
+def handle_appointment_booking():
+    print_header("Book An Appointment")
+    try:
+        patient_id = int(input("Enter Patient ID: "))
+        handle_doctor_lookup()
+        doctor_id = int(input("\nEnter Preferred Doctor ID from above: "))
+        date = input("Enter Appointment Date (YYYY-MM-DD): ").strip()
+        
+        result = book_appointment(patient_id, doctor_id, date)
+        if result["status"]:
+            print(f" Success: Appointment booked! Reference ID: {result['appointment_id']}")
+        else:
+            print(f" {result['message']}")
+    except ValueError:
+        print(" Input Error: IDs must be numeric values.")
+
+def handle_view_appointments():
+    print_header("Scheduled Appointments Log")
+    all_apps = get_all_appointments()
+    if not all_apps:
+        print("No appointments scheduled currently.")
+        return
+        
+    print(f"{'Appt ID':<10}{'Patient Name':<20}{'Doctor Assigned':<20}{'Date'}")
+    print("-" * 65)
+    for app_id, info in all_apps.items():
+        patient = get_patient(info['patient_id'])
+        doctor = get_doctor(info['doctor_id'])
+        
+        p_name = patient['name'] if patient else "Unknown"
+        d_name = doctor['name'] if doctor else "Unknown"
+        
+        print(f"{app_id:<10}{p_name:<20}{d_name:<20}{info['date']}")
+
+def handle_appointment_cancellation():
+    print_header("Cancel Appointment")
+    try:
+        app_id = int(input("Enter Appointment Reference ID to cancel: "))
+        if cancel_appointment(app_id):
+            print(f" Success: Appointment {app_id} has been canceled.")
+        else:
+            print(f" Error: Appointment ID {app_id} not found.")
+    except ValueError:
+        print(" Input Error: Appointment ID must be a numeric value.")
+
+
+# =====================================================================
+# MODULE 6: MAIN CONTROLLER EXECUTION LOOP
+# =====================================================================
+def main():
+    while True:
+        print("\n" + "#"*45)
+        print(" HOSPITAL APPOINTMENT MANAGEMENT SYSTEM ")
+        print("#"*45)
+        print("1. Register New Patient")
+        print("2. View Available Doctors")
+        print("3. Book an Appointment")
+        print("4. View Scheduled Appointments")
+        print("5. Cancel an Appointment")
+        print("6. Exit System")
+        
+        choice = input("\nSelect an option (1-6): ").strip()
+        
+        if choice == '1':
+            handle_patient_registration()
+        elif choice == '2':
+            handle_doctor_lookup()
+        elif choice == '3':
+            handle_appointment_booking()
+        elif choice == '4':
+            handle_view_appointments()
+        elif choice == '5':
+            handle_appointment_cancellation()
+        elif choice == '6':
+            print("\nShutting down Management System. Goodbye!")
+            break
+        else:
+            print(" Invalid Option. Please choose between 1 and 6.")
+
+if __name__ == "__main__":
+    main()
