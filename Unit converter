@@ -1,0 +1,103 @@
+# unit_converter.py
+
+# =====================================================================
+# 1. CONVERSION FUNCTIONS (The Module Section)
+# =====================================================================
+
+# --- Length Conversions ---
+def km_to_miles(km):
+    """Convert kilometers to miles."""
+    return km * 0.621371
+
+def miles_to_km(miles):
+    """Convert miles to kilometers."""
+    return miles / 0.621371
+
+# --- Weight Conversions ---
+def kg_to_pounds(kg):
+    """Convert kilograms to pounds."""
+    return kg * 2.20462
+
+def pounds_to_kg(lbs):
+    """Convert pounds to kilograms."""
+    return lbs / 2.20462
+
+# --- Temperature Conversions ---
+def celsius_to_fahrenheit(celsius):
+    """Convert Celsius to Fahrenheit."""
+    return (celsius * 9/5) + 32
+
+def fahrenheit_to_celsius(fahrenheit):
+    """Convert Fahrenheit to Celsius."""
+    return (fahrenheit - 32) * 5/9
+
+
+# =====================================================================
+# 2. USER INTERFACE FUNCTIONS
+# =====================================================================
+
+def display_menu():
+    """Prints the conversion options menu."""
+    print("\n=========================")
+    print("      UNIT CONVERTER     ")
+    print("=========================")
+    print("1. Kilometers - Miles")
+    print("2. Miles - Kilometers")
+    print("3. Kilograms - Pounds")
+    print("4. Pounds - Kilograms")
+    print("5. Celsius - Fahrenheit")
+    print("6. Fahrenheit - Celsius")
+    print("7. Exit")
+    print("=========================")
+
+def get_valid_float(prompt):
+    """Helper function to prevent crashes if users type non-numeric text."""
+    while True:
+        try:
+            return float(input(prompt))
+        except ValueError:
+            print(" Invalid input! Please enter a numerical value.")
+
+
+# =====================================================================
+# 3. MAIN PROGRAM ENGINE
+# =====================================================================
+
+def main():
+    while True:
+        display_menu()
+        choice = input("Select a conversion (1-7): ").strip()
+        
+        if choice == '7':
+            print("\nThank you for using the Unit Converter. Goodbye! 👋")
+            break
+            
+        if choice not in ['1', '2', '3', '4', '5', '6']:
+            print(" Invalid choice. Please pick an option between 1 and 7.")
+            continue
+            
+        # Prompt user for the numerical value to convert
+        value = get_valid_float("Enter the value to convert: ")
+        
+        # Route the value to the correct conversion function
+        if choice == '1':
+            result = km_to_miles(value)
+            print(f" {value} km = {result:.2f} miles")
+        elif choice == '2':
+            result = miles_to_km(value)
+            print(f" {value} miles = {result:.2f} km")
+        elif choice == '3':
+            result = kg_to_pounds(value)
+            print(f" {value} kg = {result:.2f} lbs")
+        elif choice == '4':
+            result = pounds_to_kg(value)
+            print(f" {value} lbs = {result:.2f} kg")
+        elif choice == '5':
+            result = celsius_to_fahrenheit(value)
+            print(f" {value}°C = {result:.2f}°F")
+        elif choice == '6':
+            result = fahrenheit_to_celsius(value)
+            print(f" {value}°F = {result:.2f}°C")
+
+if __name__ == "__main__":
+    main()
